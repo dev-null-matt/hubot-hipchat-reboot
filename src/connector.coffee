@@ -64,6 +64,7 @@ module.exports = class Connector extends EventEmitter
     @host = options.host
     @caps_ver = options.caps_ver or "hubot-hipchat:#{pkg.version}"
     @xmppDomain = options.xmppDomain
+    @reconnect = options.reconnect
     @bosh = options.bosh
 
     # Multi-User-Conference (rooms) service host. Use when directing stanzas
@@ -77,7 +78,8 @@ module.exports = class Connector extends EventEmitter
     @jabber = new xmpp.Client
       jid: @jid,
       password: @password,
-      host: @host
+      host: @host,
+      reconnect: @reconnect,
       bosh: @bosh
 
     @jabber.on "error", bind(onStreamError, @)

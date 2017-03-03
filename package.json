@@ -1,6 +1,6 @@
 {
 	"name": "hubot-hipchat-reboot",
-	"version": "3.0.5",
+	"version": "3.0.6",
 	"description": "A HipChat adapter for Hubot, rebooted",
 	"keywords": [
 		"hipchat",
@@ -10,11 +10,11 @@
 		"bot"
 	],
 	"license": "MIT",
-	"author": "HipChat <support@hipchat.com>",
+	"author": "Mr. Ick <dev.null.matt@gmail.com>",
 	"main": "./src/hipchat-reboot",
 	"repository": {
 		"type": "git",
-		"url": "http://github.com/hipchat/hubot-hipchat.git"
+		"url": "http://github.com/dev-null-matt/hubot-hipchat"
 	},
 	"dependencies": {
 		"node-xmpp-client": "3.2.0",
@@ -22,6 +22,6 @@
 		"underscore": "~1.4.4"
 	},
 	"engines": {
-		"node": "~0.12.2"
+		"node": "6.10.0"
 	}
 }
