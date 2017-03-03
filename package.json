@@ -1,27 +1,27 @@
 {
-  "name": "hubot-hipchat",
-  "version": "2.12.0-6",
-  "author": "HipChat <support@hipchat.com>",
-  "description": "A HipChat adapter for Hubot",
-  "keywords": [
-    "hipchat",
-    "hubot",
-    "xmpp",
-    "chat",
-    "bot"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "http://github.com/hipchat/hubot-hipchat.git"
-  },
-  "license": "MIT",
-  "main": "./src/hipchat",
-  "engines": {
-    "node" : "~0.12.2"
-  },
-  "dependencies": {
-    "node-xmpp-client": "^2.1.0",
-    "rsvp": "~1.2.0",
-    "underscore": "~1.4.4"
-  }
+	"name": "hubot-hipchat-reboot",
+	"version": "3.0.5",
+	"description": "A HipChat adapter for Hubot, rebooted",
+	"keywords": [
+		"hipchat",
+		"hubot",
+		"xmpp",
+		"chat",
+		"bot"
+	],
+	"license": "MIT",
+	"author": "HipChat <support@hipchat.com>",
+	"main": "./src/hipchat-reboot",
+	"repository": {
+		"type": "git",
+		"url": "http://github.com/hipchat/hubot-hipchat.git"
+	},
+	"dependencies": {
+		"node-xmpp-client": "3.2.0",
+		"rsvp": "~1.2.0",
+		"underscore": "~1.4.4"
+	},
+	"engines": {
+		"node": "~0.12.2"
+	}
 }
