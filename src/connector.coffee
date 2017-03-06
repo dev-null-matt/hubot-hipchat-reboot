@@ -20,6 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+{inspect} = require "util"
 {EventEmitter} = require "events"
 fs = require "fs"
 {bind, isString, isRegExp} = require "underscore"
@@ -100,7 +101,7 @@ module.exports = class Connector extends EventEmitter
   # Disconnect the connector from HipChat, remove the anti-idle and emit the
   # `disconnect` event.
   disconnect: =>
-    @logger.debug 'Disconnecting here'
+    @logger.info 'Disconnecting here'
     if @keepalive
       clearInterval @keepalive
       delete @keepalive
@@ -121,6 +122,8 @@ module.exports = class Connector extends EventEmitter
       if not err
         for field in res.getChild("vCard").children
           data[field.name.toLowerCase()] = field.getText()
+      else
+        @logger.info("Error requesting vCard info #{inspect err}")
       callback err, data, res
 
   # Fetches the rooms available to the connector user. This is equivalent to what
@@ -134,6 +137,8 @@ module.exports = class Connector extends EventEmitter
     iq = new xmpp.Element("iq", to: this.mucDomain, type: "get")
       .c("query", xmlns: "http://jabber.org/protocol/disco#items");
     @sendIq iq, (err, stanza) ->
+      if err
+        @logger.info "Error getting rooms list #{inspect err}"
       rooms = if err then [] else
         # Parse response into objects
         stanza.getChild("query").getChildren("item").map (el) ->
@@ -159,6 +164,8 @@ module.exports = class Connector extends EventEmitter
     iq = new xmpp.Element("iq", type: "get")
       .c("query", xmlns: "jabber:iq:roster")
     @sendIq iq, (err, stanza) ->
+      if err
+        @logger.info "Error getting rooms list #{inspect err}"
       items = if err then [] else usersFromStanza(stanza)
       callback err, (items or []), stanza
 
@@ -258,6 +265,7 @@ module.exports = class Connector extends EventEmitter
   #   - `err`: Error condition (string) if any
   #   - `stanza`: Full response stanza, an `xmpp.Element`
   sendIq: (stanza, callback) ->
+    @logger.info "sendIq: #{inspect stanza}"
     stanza = stanza.root() # work with base element
     id = @iq_count++
     stanza.attrs.id = id;
@@ -376,6 +384,7 @@ module.exports = class Connector extends EventEmitter
 #   <system-shutdown xmlns='urn:ietf:params:xml:ns:xmpp-streams'/>
 # </stream:error>
 onStreamError = (err) ->
+  @logger.info "onStreamError: #{inspect err}"
   if err instanceof xmpp.Element
     condition = err.children[0].name
     text = err.getChildText "text"
@@ -394,7 +403,7 @@ onOnline = ->
   @setAvailability "chat"
 
   ping = =>
-    @jabber.send new xmpp.Element('r')
+    @jabber.send new xmpp.Element(' ')
     @emit "ping"
 
   @keepalive = setInterval ping, 30000
@@ -405,6 +414,7 @@ onOnline = ->
       # This isn't technically a stream error which is what the `error`
       # event usually represents, but we want to treat a profile fetch
       # error as a fatal error and disconnect the connector.
+      @logger.info "Error while getting profile #{inspect err}"
       @emit "error", null, "Unable to get profile info: #{err}", null
     else
       # Now that we have our name we can let rooms be joined
@@ -476,6 +486,7 @@ onStanza = (stanza) ->
         users = usersFromStanza(stanza)
         @emit "rosterChange", users, stanza
     else
+      @logger.info "IQ error response: #{inspect stanza}"
       # IQ error response
       # ex: http://xmpp.org/rfcs/rfc6121.html#roster-syntax-actions-result
       condition = "unknown"

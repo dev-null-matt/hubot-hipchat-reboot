@@ -89,6 +89,7 @@ class HipChat extends Adapter
       bosh: @options.bosh
     host = if @options.host then @options.host else "hipchat.com"
     @logger.info "Connecting HipChat adapter..."
+    @logger.info "Reconnect: " + @options.reconnect
 
     init = promise()
 
@@ -282,6 +283,7 @@ class HipChat extends Adapter
         catch err
           callback null, data or { }
       response.on "error", (err) ->
+        @logger "Error: #{inspect err}"
         callback err, null
 
     if method is "POST"
