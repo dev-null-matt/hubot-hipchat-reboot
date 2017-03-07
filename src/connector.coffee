@@ -58,7 +58,7 @@ module.exports = class Connector extends EventEmitter
 
     # add a JID resource if none was provided
     jid = new xmpp.JID options.jid
-    jid.resource = "hubot-hipchat" if not jid.resource
+    jid.resource = "bot" if not jid.resource
 
     @jid = jid.toString()
     @password = options.password
@@ -67,6 +67,7 @@ module.exports = class Connector extends EventEmitter
     @xmppDomain = options.xmppDomain
     @reconnect = options.reconnect
     @bosh = options.bosh
+    @squelchedJids = if options.squelchedJids then options.squelchedJids.split(',') else []
 
     # Multi-User-Conference (rooms) service host. Use when directing stanzas
     # to the MUC service.
@@ -83,10 +84,20 @@ module.exports = class Connector extends EventEmitter
       reconnect: @reconnect,
       bosh: @bosh
 
+    # XMPP emits the following events based on reading the current version (as of 3/6/2017)
+    # 'error',  'online', 'offline', 'stanza', 'stanza:preauth', 'auth'
+
     @jabber.on "error", bind(onStreamError, @)
+
     @jabber.on "online", bind(onOnline, @)
-    @jabber.on "stanza", bind(onStanza, @)
     @jabber.on "offline", bind(onOffline, @)
+
+    @jabber.on "stanza", bind(onStanza, @)
+    @jabber.on "stanza:preauth", bind(onStanza, @)
+
+    @jabber.on "auth", bind(onAuth, @)
+
+    # TODO: Is this unused? Remove it???
     @jabber.on "close", bind(onClose, @)
 
     # debug network traffic
@@ -196,6 +207,7 @@ module.exports = class Connector extends EventEmitter
   # - `roomJid`: Target room, in the form of `????_????@conf.hipchat.com`
   # - `historyStanzas`: Max number of history entries to request
   join: (roomJid, historyStanzas) ->
+    @logger.info("Joining #{roomJid}")
     historyStanzas = 0 if not historyStanzas
     packet = new xmpp.Element "presence", to: "#{roomJid}/#{@name}"
     packet.c "x", xmlns: "http://jabber.org/protocol/muc"
@@ -222,6 +234,7 @@ module.exports = class Connector extends EventEmitter
   #    - Private message to a user: `????_????@chat.hipchat.com`
   # - `message`: Message to be sent to the room
   message: (targetJid, message) ->
+
     parsedJid = new xmpp.JID targetJid
 
     if parsedJid.domain is @mucDomain
@@ -397,16 +410,17 @@ onStreamError = (err) ->
     @emit "error", null, null, err
 
 # Whenever an XMPP connection is made, this function is responsible for
-# triggering the `connect` event and starting the 30s anti-idle. It will
+# triggering the `connect` event and starting the 15 anti-idle. It will
 # also set the availability of the connector to `chat`.
 onOnline = ->
   @setAvailability "chat"
 
   ping = =>
-    @jabber.send new xmpp.Element(' ')
+    @logger.debug "Pinging server with 'r' to keep connection alive"
+    @jabber.send new xmpp.Element('r')
     @emit "ping"
 
-  @keepalive = setInterval ping, 30000
+  @keepalive = setInterval ping, 15000
 
   # Load our profile to get name
   @getProfile (err, data) =>
@@ -519,6 +533,9 @@ onOffline = ->
 onClose = ->
   @logger.info 'Connection was closed'
   @disconnect()
+
+onAuth = ->
+  @logger.info 'Successfully authenticated'
 
 usersFromStanza = (stanza) ->
   # Parse response into objects

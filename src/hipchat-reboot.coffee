@@ -63,6 +63,7 @@ class HipChat extends Adapter
     botpw = process.env.HUBOT_HIPCHAT_PASSWORD
     if not botpw
       throw new Error("Environment variable HUBOT_HIPCHAT_PASSWORD is required to contain your bot's user password.")
+
     @options =
       jid: botjid
       password: botpw
@@ -139,7 +140,6 @@ class HipChat extends Adapter
           @logger.info "Not joining #{jid} because it is blacklisted"
           return
 
-        @logger.info "Joining #{jid}"
         connector.join jid
 
       # Fetch user info
