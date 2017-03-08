@@ -1,7 +1,7 @@
 {Adapter, TextMessage, EnterMessage, LeaveMessage, TopicMessage, User} = require "hubot"
 HTTPS = require "https"
 {inspect} = require "util"
-Connector = require "./connector"
+{Connector} = require "./connector"
 promise = require "./promises"
 
 class HipChat extends Adapter
@@ -63,6 +63,9 @@ class HipChat extends Adapter
     botpw = process.env.HUBOT_HIPCHAT_PASSWORD
     if not botpw
       throw new Error("Environment variable HUBOT_HIPCHAT_PASSWORD is required to contain your bot's user password.")
+
+    squelchedJids = process.env.HUBOT_HIPCHAT_SQUELCHED_JIDS or ""
+    @robot.squelchedJids = if squelchedJids then squelchedJids.split(',') else []
 
     @options =
       jid: botjid
@@ -176,10 +179,15 @@ class HipChat extends Adapter
         # to ensure user data is properly loaded
         init.done =>
           {getAuthor, message, reply_to, room} = opts
-          author = Object.create(getAuthor()) or {}
-          author.reply_to = reply_to
-          author.room = room
-          @receive new TextMessage(author, message)
+          if reply_to in @squelchedJids
+            @logger.info "Ignoring message from #{reply_to} #{@squelchedJids}"
+          else if room in @squelchedJids
+            @logger.info "Ignoring message from #{room} #{@squelchedJids}"
+          else
+            author = Object.create(getAuthor()) or {}
+            author.reply_to = reply_to
+            author.room = room
+            @receive new TextMessage(author, message)
 
       if firstTime
         connector.onMessage (channel, from, message) =>

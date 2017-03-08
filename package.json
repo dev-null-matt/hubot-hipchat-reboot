@@ -1,6 +1,6 @@
 {
 	"name": "hubot-hipchat-reboot",
-	"version": "3.1.17",
+	"version": "3.2.11",
 	"description": "A HipChat adapter for Hubot, rebooted",
 	"keywords": [
 		"hipchat",
@@ -14,12 +14,22 @@
 	"main": "./src/hipchat-reboot",
 	"repository": {
 		"type": "git",
-		"url": "http://github.com/dev-null-matt/hubot-hipchat"
+		"url": "http://github.com/dev-null-matt/hubot-hipchat-reboot"
+	},
+	"scripts": {
+		"test": "./node_modules/.bin/mocha --compilers coffee:coffee-script && ./node_modules/.bin/mocha --reporter spec"
 	},
 	"dependencies": {
 		"node-xmpp-client": "3.2.0",
 		"rsvp": "~1.2.0",
 		"underscore": "~1.4.4"
+	},
+	"devDependencies": {
+		"mocha": "^2.1.0",
+		"mockery": "^1.4.0",
+		"sinon-chai": "^2.8.0",
+		"sinon": "~1.17.0",
+		"chai": "~2.1.0"
 	},
 	"engines": {
 		"node": "6.10.0"

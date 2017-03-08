@@ -32,7 +32,7 @@ pkg = do ->
   JSON.parse(data)
 
 # ##Public Connector API
-module.exports = class Connector extends EventEmitter
+class Connector extends EventEmitter
 
   # This is the `Connector` constructor.
   #
@@ -67,7 +67,6 @@ module.exports = class Connector extends EventEmitter
     @xmppDomain = options.xmppDomain
     @reconnect = options.reconnect
     @bosh = options.bosh
-    @squelchedJids = if options.squelchedJids then options.squelchedJids.split(',') else []
 
     # Multi-User-Conference (rooms) service host. Use when directing stanzas
     # to the MUC service.
@@ -446,10 +445,8 @@ onOnline = ->
 # it is a private message.
 onStanza = (stanza) ->
   @emit "data", stanza
-
   if stanza.is "message"
     if stanza.attrs.type is "groupchat"
-
       return if stanza.getChild "delay"
       fromJid = new xmpp.JID stanza.attrs.from
       fromChannel = fromJid.bare().toString()
@@ -557,3 +554,5 @@ getText = (el, name) ->
 
 getInt = (el, name) ->
   parseInt getText(el, name), 10
+
+module.exports = {Connector, onStanza}
