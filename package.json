@@ -1,6 +1,6 @@
 {
 	"name": "hubot-hipchat-reboot",
-	"version": "3.2.11",
+	"version": "3.2.13",
 	"description": "A HipChat adapter for Hubot, rebooted",
 	"keywords": [
 		"hipchat",

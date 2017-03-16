@@ -179,15 +179,10 @@ class HipChat extends Adapter
         # to ensure user data is properly loaded
         init.done =>
           {getAuthor, message, reply_to, room} = opts
-          if reply_to in @squelchedJids
-            @logger.info "Ignoring message from #{reply_to} #{@squelchedJids}"
-          else if room in @squelchedJids
-            @logger.info "Ignoring message from #{room} #{@squelchedJids}"
-          else
-            author = Object.create(getAuthor()) or {}
-            author.reply_to = reply_to
-            author.room = room
-            @receive new TextMessage(author, message)
+          author = Object.create(getAuthor()) or {}
+          author.reply_to = reply_to
+          author.room = room
+          @receive new TextMessage(author, message)
 
       if firstTime
         connector.onMessage (channel, from, message) =>
@@ -196,6 +191,7 @@ class HipChat extends Adapter
           mention_name = connector.mention_name
           regex = new RegExp "^@#{mention_name}\\b", "i"
           message = message.replace regex, "#{mention_name}: "
+          @logger.debug "#{inspect from}@#{channel}: #{message}"
           handleMessage
             getAuthor: => @robot.brain.userForName(from) or new User(from)
             message: message
